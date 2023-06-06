@@ -1,9 +1,5 @@
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 public class Status {
-    public static String buildStatusPage() throws IOException {
+    public static String buildStatusPage() {
         String freeMemory = Utils.getFreeMemory();
         System.out.println(freeMemory);
         String freeDisk = Utils.getFreeDisk();

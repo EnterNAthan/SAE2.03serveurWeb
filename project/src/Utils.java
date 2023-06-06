@@ -1,10 +1,10 @@
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 
 public class Utils {
     public static String execCommand(String command) throws IOException, InterruptedException {
@@ -56,5 +56,16 @@ public class Utils {
             Logger.logError("Error while getting free disk: " + e.getMessage());
         }
         return freeDisk.replace(" ", " ");
+    }
+
+    public static boolean badRequestVerification(String path, Socket clientSocket, DataOutputStream writer) throws IOException {
+        if (!path.contains("command=") || !path.contains("?")) {
+            writer.writeBytes("HTTP/1.1 400 Bad Request\r\n");
+            writer.writeBytes("\r\n");
+            writer.flush();
+            Logger.logAccess(clientSocket.getInetAddress().getHostAddress(), true, path, 400);
+            return true;
+        }
+        return false;
     }
 }

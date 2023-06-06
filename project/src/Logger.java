@@ -5,11 +5,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class Logger {
     private static File logAccessFile, logErrorFile;
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
     public static void init(Element webconf) {
-        /*création des fichier des log s'il sotn pas crée*/
+        // création des fichier des log s'il sotn pas crée
         String logAccesPath = webconf.getElementsByTagName("accesslog").item(0).getTextContent();
         String logErrorPath = webconf.getElementsByTagName("errorlog").item(0).getTextContent();
         logAccessFile = new File(logAccesPath);

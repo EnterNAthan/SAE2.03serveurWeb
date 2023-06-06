@@ -19,15 +19,7 @@ public enum ContentType {
 
     ContentType(String type, List<String> extensions) {
         this.type = type;
-        this.extensions =  extensions;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public List<String> getExtensions() {
-        return extensions;
+        this.extensions = extensions;
     }
 
     public String getHeader(String extension) {

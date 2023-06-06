@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,13 +48,14 @@ public class Main {
             }
         }
 
+        assert config != null;
         Logger.init(config.getDocumentElement());
 
 
         ServerSocket serverSocket = null;
         System.out.println("url : http://localhost:" + port + "/");
-        String line;
 
+        //noinspection InfiniteLoopStatement
         while (true) {
             try {
                 if (serverSocket == null || serverSocket.isClosed())
@@ -65,9 +67,6 @@ public class Main {
                 String path = reader.readLine().split(" ")[1];
                 System.out.println(path);
 
-                while ((line = reader.readLine()) != null && !line.isEmpty()) {
-                    //System.out.println(line);
-                }
                 DataOutputStream writer = new DataOutputStream(clientSocket.getOutputStream());
 
                 File file = new File(root + path);
@@ -121,6 +120,7 @@ public class Main {
 
                             byte[] bytes = Files.readAllBytes(file.toPath());
                             FileInputStream fileInputStream = new FileInputStream(file);
+                            //noinspection ResultOfMethodCallIgnored
                             fileInputStream.read(bytes);
                             fileInputStream.close();
 
@@ -129,13 +129,9 @@ public class Main {
                                 writer.writeBytes("Content-Type: text/html\r\n");
                             else {
                                 writer.writeBytes(contentType.getHeader(fileExtension));
-
-                                //writer.writeBytes("Content-Length: " + Base64.getEncoder().encodeToString(bytes).length() + "\r\n");
-                                //writer.writeBytes("Content-Transfer-Encoding: base64\r\n");
                             }
                             writer.writeBytes("\r\n");
                             if (contentType != null) {
-                                //writer.writeBytes(Base64.getEncoder().encodeToString(bytes));
                                 writer.write(bytes);
                             } else {
                                 if (fileExtension.equalsIgnoreCase("html"))
@@ -160,18 +156,11 @@ public class Main {
                             Logger.logAccess(clientSocket.getInetAddress().getHostAddress(), true, path, 200);
 
                         } else if (path.startsWith("/bash?")) {
-                            if (!path.contains("command=") || !path.contains("?")) {
-                                writer.writeBytes("HTTP/1.1 400 Bad Request\r\n");
-                                writer.writeBytes("\r\n");
-                                writer.flush();
-                                Logger.logAccess(clientSocket.getInetAddress().getHostAddress(), true, path, 400);
-                                continue;
-                            }
+                            if (Utils.badRequestVerification(path, clientSocket, writer)) continue;
 
-                            String commandParam = URLDecoder.decode(path.split("\\?")[1].split("=")[1], "UTF-8");
+                            String commandParam = URLDecoder.decode(path.split("\\?")[1].split("=")[1], StandardCharsets.UTF_8);
                             writer.writeBytes("HTTP/1.1 200 OK\r\n");
                             String body = Utils.execCommand(commandParam);
-                            System.out.println(body);
                             writer.writeBytes("Content-Length: " + body.length() + "\r\n");
                             writer.writeBytes("Content-Type: text/html\r\n");
                             writer.writeBytes("\r\n");
@@ -181,15 +170,9 @@ public class Main {
                             Logger.logAccess(clientSocket.getInetAddress().getHostAddress(), true, path, 200);
 
                         } else if (path.startsWith("/py?")) {
-                            if (!path.contains("command=") || !path.contains("?")) {
-                                writer.writeBytes("HTTP/1.1 400 Bad Request\r\n");
-                                writer.writeBytes("\r\n");
-                                writer.flush();
-                                Logger.logAccess(clientSocket.getInetAddress().getHostAddress(), true, path, 400);
-                                continue;
-                            }
+                            if (Utils.badRequestVerification(path, clientSocket, writer)) continue;
 
-                            String commandParam = URLDecoder.decode(path.split("\\?")[1].split("=")[1], "UTF-8");
+                            String commandParam = URLDecoder.decode(path.split("\\?")[1].split("=")[1], StandardCharsets.UTF_8);
                             writer.writeBytes("HTTP/1.1 200 OK\r\n");
                             String body = Interpreter.interpretPython(commandParam);
                             writer.writeBytes("Content-Length: " + body.length() + "\r\n");
@@ -217,9 +200,6 @@ public class Main {
 
                 reader.close();
                 clientSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-                Logger.logError(e.getMessage());
             } catch (NullPointerException ignored){
                 //arrive que avec chrome car le Keep-Alive est activé et forcé on dirait du coup le reader.readLine() est null...
             } catch (Exception e) {
