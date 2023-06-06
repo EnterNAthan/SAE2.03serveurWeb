@@ -1,10 +1,18 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
+        Document config = loadConfigFile("project/config.xml");
         int port;
         String root = "www";
         if (args.length != 0) {
@@ -12,6 +20,13 @@ public class Main {
         } else {
             port = 8888;
         }
+        if (config != null) {
+            Element webconf = config.getDocumentElement();
+            port = Integer.parseInt(webconf.getElementsByTagName("port").item(0).getTextContent());
+            root = webconf.getElementsByTagName("root").item(0).getTextContent();
+        }
+
+
 
         ServerSocket serverSocket = new ServerSocket(port);
         System.out.println("url : http://localhost:" + port + "/");
@@ -69,4 +84,35 @@ public class Main {
         }
 
     }
+    public static Document loadConfigFile(String filePath) {
+        try {
+            // Créer une instance de DocumentBuilderFactory, qui est une classe abstraite
+            // utilisée pour créer des objets DocumentBuilder.
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+            // Créer un constructeur de documents à l'aide de la factory.
+            // Le DocumentBuilder est utilisé pour analyser les fichiers XML et créer des objets Document.
+            DocumentBuilder builder = factory.newDocumentBuilder();
+
+            // Parser le fichier XML spécifié par le chemin filePath.
+            // La méthode parse prend un objet File en entrée et renvoie un objet Document représentant le contenu du fichier.
+            Document config = builder.parse(new File(filePath));
+
+            // Normaliser le document en supprimant les nœuds vides et en fusionnant les nœuds adjacents.
+            // Cela garantit une structure cohérente du document.
+            config.getDocumentElement().normalize();
+
+            // Renvoyer le document XML analysé.
+            return config;
+        } catch (IOException | SAXException | ParserConfigurationException e) {
+            // Gérer les exceptions liées à la lecture du fichier ou à la configuration du parser.
+            // Afficher les informations d'erreur à l'aide de e.printStackTrace().
+            e.printStackTrace();
+
+            // Renvoyer null pour indiquer qu'une erreur s'est produite lors du chargement du fichier.
+            return null;
+        }
+    }
+
+
 }
