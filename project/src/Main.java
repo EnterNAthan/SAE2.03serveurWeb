@@ -1,17 +1,28 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    private static final List<String> acceptedAddresses = new ArrayList<>();
+    private static final List<String> rejectedAddresses = new ArrayList<>();
+
+
+    public static void main(String[] args) {
+
         Document config = loadConfigFile("project/config.xml");
         int port;
         String root = "www";
@@ -24,66 +35,130 @@ public class Main {
             Element webconf = config.getDocumentElement();
             port = Integer.parseInt(webconf.getElementsByTagName("port").item(0).getTextContent());
             root = webconf.getElementsByTagName("root").item(0).getTextContent();
+
+            // Récupérer les adresses IP acceptées et refusées dans une NodeList qui est une liste de noeuds XML.
+            NodeList acceptNodes = webconf.getElementsByTagName("accept");
+            for (int i = 0; i < acceptNodes.getLength(); i++) {
+                acceptedAddresses.add(acceptNodes.item(i).getTextContent());
+            }
+
+            NodeList rejectNodes = webconf.getElementsByTagName("reject");
+            for (int i = 0; i < rejectNodes.getLength(); i++) {
+                rejectedAddresses.add(rejectNodes.item(i).getTextContent());
+            }
+
         }
 
 
-
-        ServerSocket serverSocket = new ServerSocket(port);
+        ServerSocket serverSocket = null;
         System.out.println("url : http://localhost:" + port + "/");
         String line;
 
         while (true) {
-            Socket clientSocket = serverSocket.accept();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            try {
+                if (serverSocket == null || serverSocket.isClosed())
+                    serverSocket = new ServerSocket(port);
 
-            String firstLine = reader.readLine();
-            String[] lString = firstLine.split(" ");
+                Socket clientSocket = serverSocket.accept();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-            while ((line = reader.readLine()) != null && !line.isEmpty()) {
-                System.out.println(line);
-            }
-            DataOutputStream writer = new DataOutputStream(clientSocket.getOutputStream());
+                String path = reader.readLine().split(" ")[1];
+                System.out.println(path);
 
-            File file = new File(root + lString[1]);
+                while ((line = reader.readLine()) != null && !line.isEmpty()) {
+                    //System.out.println(line);
+                }
+                DataOutputStream writer = new DataOutputStream(clientSocket.getOutputStream());
 
-            if (file.exists()) {
-                if (file.isDirectory()) {
-                    File[] files = file.listFiles();
-                    String html = "<html><body>";
-                    for (File f : files) {
-                        html += "<a href='" + f.getName() + "'>" + f.getName() + "</a><br>";
+                File file = new File(root + path);
+                if (isIpAddressAllowed(clientSocket.getInetAddress().getHostAddress())) {
+                    if (file.exists()) {
+                        if (file.isDirectory()) {
+                            File[] files = file.listFiles();
+
+                            if (files == null) { // si aucun fichier dans le dossier
+                                writer.writeBytes("HTTP/1.1 404 Not Found\r\n");
+                                writer.writeBytes("\r\n");
+                                writer.flush();
+                                continue;
+                            }
+
+                            writer.writeBytes("HTTP/1.1 200 OK\r\n");
+                            writer.writeBytes("Content-Type: text/html\r\n");
+                            writer.writeBytes("\r\n");
+
+                            writer.writeBytes("<html><body>");
+
+                            if (path.equals("/"))
+                                path = "";
+                            for (File f : files) {
+                                writer.writeBytes("<a href='");
+                                writer.writeBytes(path + "/" + f.getName());
+                                writer.writeBytes("'>");
+                                writer.writeBytes(f.getName());
+                                if (f.isDirectory())
+                                    writer.writeBytes("/");
+                                writer.writeBytes("</a><br>");
+                            }
+                            writer.writeBytes("</body></html>");
+
+                            writer.flush();
+                        } else {
+                            String fileExtension = "";
+                            try {
+                                fileExtension = file.getName().split("\\.")[1];
+                            } catch (ArrayIndexOutOfBoundsException ex) {
+                                System.err.println("No ext");
+                            }
+                            System.out.println(fileExtension);
+
+                            ContentType contentType = ContentType.of(fileExtension);
+                            System.out.println(contentType);
+
+                            byte[] bytes = Files.readAllBytes(file.toPath());
+                            FileInputStream fileInputStream = new FileInputStream(file);
+                            fileInputStream.read(bytes);
+                            fileInputStream.close();
+
+                            writer.writeBytes("HTTP/1.1 200 OK\r\n");
+                            if (contentType == null)
+                                writer.writeBytes("Content-Type: text/html\r\n");
+                            else {
+                                writer.writeBytes(contentType.getHeader(fileExtension));
+
+                                //writer.writeBytes("Content-Length: " + Base64.getEncoder().encodeToString(bytes).length() + "\r\n");
+                                //writer.writeBytes("Content-Transfer-Encoding: base64\r\n");
+                            }
+                            writer.writeBytes("\r\n");
+                            if (contentType != null) {
+                                //writer.writeBytes(Base64.getEncoder().encodeToString(bytes));
+                                writer.write(bytes);
+                            } else writer.write(bytes);
+                            writer.flush();
+                        }
+                    } else {
+                        writer.writeBytes("HTTP/1.1 404 Not Found\r\n");
+                        writer.writeBytes("\r\n");
+
                     }
-                    html += "</body></html>";
-                    writer.writeBytes("HTTP/1.1 200 OK\r\n");
-                    writer.writeBytes("Content-Type: text/html\r\n");
-                    writer.writeBytes("\r\n");
-                    writer.writeBytes(html);
-                    writer.flush();
                 } else {
-                    byte[] bytes = new byte[(int) file.length()];
-                    FileInputStream fileInputStream = new FileInputStream(file);
-                    fileInputStream.read(bytes);
-                    fileInputStream.close();
-
-                    writer.writeBytes("HTTP/1.1 200 OK\r\n");
-
-                    writer.writeBytes("Content-Type: text/html\r\n");
+                    writer.writeBytes("HTTP/1.1 403 Forbidden\r\n");
                     writer.writeBytes("\r\n");
-                    writer.write(bytes);
-                    writer.flush();
+
                 }
 
-
-            } else {
-                writer.writeBytes("HTTP/1.1 404 Not Found\r\n");
-                writer.writeBytes("\r\n");
-
+                reader.close();
+                clientSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                System.err.println("Fatal Error: " + e.getMessage());
+                e.printStackTrace();
             }
-            reader.close();
-            clientSocket.close();
         }
 
     }
+
     public static Document loadConfigFile(String filePath) {
         try {
             // Créer une instance de DocumentBuilderFactory, qui est une classe abstraite
@@ -115,4 +190,18 @@ public class Main {
     }
 
 
+    public static boolean isIpAddressAllowed(String ipAddress) {
+        for (String accepted : acceptedAddresses) {
+            if (ipAddress.matches(accepted)) {
+                return true;
+            }
+        }
+
+        for (String rejected : rejectedAddresses) {
+            if (ipAddress.matches(rejected)) {
+                return false;
+            }
+        }
+        return true; // Autoriser par défaut si l'adresse IP n'est pas explicitement acceptée ou refusée
+    }
 }

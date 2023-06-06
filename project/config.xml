@@ -1,8 +1,8 @@
 <webconf>
     <port>3333</port>
     <root>www</root>
-    <accept>192.168.0.0/24</accept>
-    <reject> 192.168.1.0/24</reject>
+    <accept>172.20.10.5</accept>
+    <reject>172.20.10.3</reject>
     <accesslog>/var/log/myweb/access.log</accesslog>
     <errorlog>/var/log/myweb/error.log</errorlog>
 </webconf>
