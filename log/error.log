@@ -1,0 +1,8 @@
+[06/06/2023 19:28:28]: Cannot invoke "String.split(String)" because the return value of "java.io.BufferedReader.readLine()" is null
+[06/06/2023 19:43:36]: d != java.lang.String
+[06/06/2023 19:53:01]: Index 1 out of bounds for length 1
+[06/06/2023 19:54:53]: Index 1 out of bounds for length 1
+[06/06/2023 19:54:54]: Index 1 out of bounds for length 1
+[06/06/2023 20:05:33]: Cannot invoke "String.split(String)" because the return value of "java.io.BufferedReader.readLine()" is null
+[06/06/2023 20:31:36]: Cannot invoke "String.split(String)" because the return value of "java.io.BufferedReader.readLine()" is null
+[06/06/2023 20:33:28]: Cannot invoke "String.split(String)" because the return value of "java.io.BufferedReader.readLine()" is null
