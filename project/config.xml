@@ -3,6 +3,6 @@
     <root>www</root>
     <accept>172.20.10.5</accept>
     <reject>172.20.10.3</reject>
-    <accesslog>/var/log/myweb/access.log</accesslog>
-    <errorlog>/var/log/myweb/error.log</errorlog>
+    <accesslog>log/access.log</accesslog>
+    <errorlog>log/error.log</errorlog>
 </webconf>

@@ -1,19 +1,18 @@
-import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.List;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.URLDecoder;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
 
@@ -46,8 +45,9 @@ public class Main {
             for (int i = 0; i < rejectNodes.getLength(); i++) {
                 rejectedAddresses.add(rejectNodes.item(i).getTextContent());
             }
-
         }
+
+        Logger.init(config.getDocumentElement());
 
 
         ServerSocket serverSocket = null;
@@ -80,6 +80,7 @@ public class Main {
                                 writer.writeBytes("HTTP/1.1 404 Not Found\r\n");
                                 writer.writeBytes("\r\n");
                                 writer.flush();
+                                Logger.logAccess(clientSocket.getInetAddress().getHostAddress(), true, path, 404);
                                 continue;
                             }
 
@@ -99,16 +100,19 @@ public class Main {
                                 if (f.isDirectory())
                                     writer.writeBytes("/");
                                 writer.writeBytes("</a><br>");
+
                             }
                             writer.writeBytes("</body></html>");
 
                             writer.flush();
+                            Logger.logAccess(clientSocket.getInetAddress().getHostAddress(), true, path, 200);
+
                         } else {
                             String fileExtension = "";
                             try {
                                 fileExtension = file.getName().split("\\.")[1];
                             } catch (ArrayIndexOutOfBoundsException ex) {
-                                System.err.println("No ext");
+                                Logger.logError("File doesn't have an extension");
                             }
                             System.out.println(fileExtension);
 
@@ -133,17 +137,81 @@ public class Main {
                             if (contentType != null) {
                                 //writer.writeBytes(Base64.getEncoder().encodeToString(bytes));
                                 writer.write(bytes);
-                            } else writer.write(bytes);
+                            } else {
+                                if (fileExtension.equalsIgnoreCase("html"))
+                                    writer.writeBytes(Interpreter.formatHTMLPage(file));
+                                else writer.write(bytes);
+                            }
                             writer.flush();
+                            Logger.logAccess(clientSocket.getInetAddress().getHostAddress(), true, path, 404);
+
                         }
                     } else {
-                        writer.writeBytes("HTTP/1.1 404 Not Found\r\n");
-                        writer.writeBytes("\r\n");
+                        if (path.equalsIgnoreCase("/status")) {
+                            writer.writeBytes("HTTP/1.1 200 OK\r\n");
+                            String body = Status.buildStatusPage();
+                            System.out.println(body);
+                            writer.writeBytes("Content-Length: " + body.length() + "\r\n");
+                            writer.writeBytes("Content-Type: text/html\r\n");
+                            writer.writeBytes("\r\n");
+                            writer.writeBytes(body);
+                            writer.writeBytes("\r\n");
+                            writer.flush();
+                            Logger.logAccess(clientSocket.getInetAddress().getHostAddress(), true, path, 200);
+
+                        } else if (path.startsWith("/bash?")) {
+                            if (!path.contains("command=") || !path.contains("?")) {
+                                writer.writeBytes("HTTP/1.1 400 Bad Request\r\n");
+                                writer.writeBytes("\r\n");
+                                writer.flush();
+                                Logger.logAccess(clientSocket.getInetAddress().getHostAddress(), true, path, 400);
+                                continue;
+                            }
+
+                            String commandParam = URLDecoder.decode(path.split("\\?")[1].split("=")[1], "UTF-8");
+                            writer.writeBytes("HTTP/1.1 200 OK\r\n");
+                            String body = Utils.execCommand(commandParam);
+                            System.out.println(body);
+                            writer.writeBytes("Content-Length: " + body.length() + "\r\n");
+                            writer.writeBytes("Content-Type: text/html\r\n");
+                            writer.writeBytes("\r\n");
+                            writer.writeBytes(body);
+                            writer.writeBytes("\r\n");
+                            writer.flush();
+                            Logger.logAccess(clientSocket.getInetAddress().getHostAddress(), true, path, 200);
+
+                        } else if (path.startsWith("/py?")) {
+                            if (!path.contains("command=") || !path.contains("?")) {
+                                writer.writeBytes("HTTP/1.1 400 Bad Request\r\n");
+                                writer.writeBytes("\r\n");
+                                writer.flush();
+                                Logger.logAccess(clientSocket.getInetAddress().getHostAddress(), true, path, 400);
+                                continue;
+                            }
+
+                            String commandParam = URLDecoder.decode(path.split("\\?")[1].split("=")[1], "UTF-8");
+                            writer.writeBytes("HTTP/1.1 200 OK\r\n");
+                            String body = Interpreter.interpretPython(commandParam);
+                            writer.writeBytes("Content-Length: " + body.length() + "\r\n");
+                            writer.writeBytes("Content-Type: text/html\r\n");
+                            writer.writeBytes("\r\n");
+                            writer.writeBytes(body);
+                            writer.writeBytes("\r\n");
+                            writer.flush();
+                            Logger.logAccess(clientSocket.getInetAddress().getHostAddress(), true, path, 200);
+                        } else {
+                            writer.writeBytes("HTTP/1.1 404 Not Found\r\n");
+                            writer.writeBytes("\r\n");
+                            Logger.logAccess(clientSocket.getInetAddress().getHostAddress(), true, path, 404);
+
+                        }
 
                     }
                 } else {
                     writer.writeBytes("HTTP/1.1 403 Forbidden\r\n");
                     writer.writeBytes("\r\n");
+                    Logger.logAccess(clientSocket.getInetAddress().getHostAddress(), true, path, 403);
+
 
                 }
 
@@ -151,9 +219,12 @@ public class Main {
                 clientSocket.close();
             } catch (IOException e) {
                 e.printStackTrace();
+                Logger.logError(e.getMessage());
+            } catch (NullPointerException ignored){
+                //arrive que avec chrome car le Keep-Alive est activé et forcé on dirait du coup le reader.readLine() est null...
             } catch (Exception e) {
-                System.err.println("Fatal Error: " + e.getMessage());
                 e.printStackTrace();
+                Logger.logError(e.getMessage());
             }
         }
 
@@ -183,6 +254,7 @@ public class Main {
             // Gérer les exceptions liées à la lecture du fichier ou à la configuration du parser.
             // Afficher les informations d'erreur à l'aide de e.printStackTrace().
             e.printStackTrace();
+            Logger.logError(e.getMessage());
 
             // Renvoyer null pour indiquer qu'une erreur s'est produite lors du chargement du fichier.
             return null;
@@ -192,13 +264,13 @@ public class Main {
 
     public static boolean isIpAddressAllowed(String ipAddress) {
         for (String accepted : acceptedAddresses) {
-            if (ipAddress.matches(accepted)) {
+            if (ipAddress.equals(accepted)) {
                 return true;
             }
         }
 
         for (String rejected : rejectedAddresses) {
-            if (ipAddress.matches(rejected)) {
+            if (ipAddress.equals(rejected)) {
                 return false;
             }
         }

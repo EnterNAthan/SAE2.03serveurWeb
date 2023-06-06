@@ -12,10 +12,6 @@ public enum ContentType {
     AUDIO(
             "audio",
             List.of("mp3", "wav", "ogg")
-    ),
-    TEXT(
-            "text",
-            List.of("html", "css", "js", "txt", "csv", "xml", "json")
     );
 
     private final String type;

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<!-- creation text area -->
+<h2>Bash</h2>
+<textarea id="bashCode" rows="10" cols="50">
+echo "Hello World"
+</textarea>
+
+<!-- creation du bouton -->
+<button onclick="runBash()">Run</button>
+
+<!-- creation text area pour la sortie -->
+<h2>Output</h2>
+<textarea id="bashOutput" rows="10" cols="50"></textarea>
+
+
+
+<br><br>
+<br><br>
+<br><br>
+<br><br>
+
+<!-- creation text area -->
+<h2>Python</h2>
+<textarea id="pythonCode" rows="10" cols="50">
+print("Hello World")
+</textarea>
+
+<!-- creation du bouton -->
+<button onclick="runPython()">Run</button>
+
+<!-- creation text area pour la sortie -->
+<h2>Output</h2>
+<textarea id="pythonOutput" rows="10" cols="50"></textarea>
+
+
+<script>
+    function runBash() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("bashOutput").value = this.responseText;
+            }
+        };
+        var bashCode = document.getElementById("bashCode").value;
+        bashCode = bashCode.replace(/ /g, "%20");
+        bashCode = bashCode.replace(/\n/g, "%0A");
+        xhttp.open("GET", "/bash?command=" + bashCode, true);
+        xhttp.send();
+    }
+
+function runPython() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("pythonOutput").value = this.responseText;
+            }
+        };
+        var bashCode = document.getElementById("pythonCode").value;
+        bashCode = bashCode.replace(/ /g, "%20");
+        bashCode = bashCode.replace(/\n/g, "%0A");
+        bashCode = bashCode.replace(/"/g, "%27");
+        xhttp.open("GET", "/py?command=" + bashCode, true);
+        xhttp.send();
+    }
+
+</script>
+
+
+</body>
+</html>
