@@ -3,7 +3,7 @@ import java.util.List;
 public enum ContentType {
     IMAGE(
             "image",
-            List.of("png", "jpg", "jpeg", "png", "webp", "ico")
+            List.of("png", "jpg", "jpeg", "png", "webp", "ico", "gif")
     ),
     VIDEO(
             "video",

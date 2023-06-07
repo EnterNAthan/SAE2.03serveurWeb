@@ -6,3 +6,4 @@
 [06/06/2023 20:05:33]: Cannot invoke "String.split(String)" because the return value of "java.io.BufferedReader.readLine()" is null
 [06/06/2023 20:31:36]: Cannot invoke "String.split(String)" because the return value of "java.io.BufferedReader.readLine()" is null
 [06/06/2023 20:33:28]: Cannot invoke "String.split(String)" because the return value of "java.io.BufferedReader.readLine()" is null
+[07/06/2023 12:52:26]: Not in GZIP format

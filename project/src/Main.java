@@ -14,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public class Main {
 
@@ -129,10 +131,19 @@ public class Main {
                                 writer.writeBytes("Content-Type: text/html\r\n");
                             else {
                                 writer.writeBytes(contentType.getHeader(fileExtension));
+                                writer.writeBytes("Content-Encoding: gzip\r\n");
                             }
                             writer.writeBytes("\r\n");
                             if (contentType != null) {
-                                writer.write(bytes);
+                                FileInputStream fis = new FileInputStream(file);
+                                GZIPOutputStream gzipOS = new GZIPOutputStream(writer);
+                                byte[] buffer = new byte[1024];
+                                int len;
+                                while((len=fis.read(buffer)) != -1){
+                                    gzipOS.write(buffer, 0, len);
+                                }
+                                gzipOS.close();
+                                fis.close();
                             } else {
                                 if (fileExtension.equalsIgnoreCase("html"))
                                     writer.writeBytes(Interpreter.formatHTMLPage(file));

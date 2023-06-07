@@ -157,3 +157,32 @@
 [06/06/2023 20:46:53]: 0:0:0:0:0:0:0:1 got Authorized for /images/n2.jpg with code 404
 [06/06/2023 20:46:57]: 0:0:0:0:0:0:0:1 got Authorized for /technique.html with code 404
 [06/06/2023 20:46:57]: 0:0:0:0:0:0:0:1 got Authorized for /images/l1.gif with code 404
+[07/06/2023 10:11:28]: 0:0:0:0:0:0:0:1 got Authorized for  with code 200
+[07/06/2023 10:11:28]: 0:0:0:0:0:0:0:1 got Authorized for  with code 200
+[07/06/2023 10:11:28]: 0:0:0:0:0:0:0:1 got Authorized for /favicon.ico with code 404
+[07/06/2023 10:11:30]: 0:0:0:0:0:0:0:1 got Authorized for /images with code 200
+[07/06/2023 10:11:31]: 0:0:0:0:0:0:0:1 got Authorized for /images/n2.jpg with code 404
+[07/06/2023 10:11:33]: 0:0:0:0:0:0:0:1 got Authorized for /images/n2.jpg with code 404
+[07/06/2023 10:11:35]: 0:0:0:0:0:0:0:1 got Authorized for /images/l1.gif with code 404
+[07/06/2023 10:16:54]: 0:0:0:0:0:0:0:1 got Authorized for /images/l1.gif with code 404
+[07/06/2023 10:25:19]: 0:0:0:0:0:0:0:1 got Authorized for /images with code 200
+[07/06/2023 10:25:20]: 0:0:0:0:0:0:0:1 got Authorized for /images/n2.jpg with code 404
+[07/06/2023 10:27:48]: 0:0:0:0:0:0:0:1 got Authorized for /miniWeb.html with code 404
+[07/06/2023 10:27:48]: 0:0:0:0:0:0:0:1 got Authorized for /images/n2.jpg with code 404
+[07/06/2023 10:27:51]: 0:0:0:0:0:0:0:1 got Authorized for /interpreter.html with code 404
+[07/06/2023 10:28:13]: 0:0:0:0:0:0:0:1 got Authorized for /bash?command=echo%20%22Hello%20World%22%0A with code 200
+[07/06/2023 10:28:18]: 0:0:0:0:0:0:0:1 got Authorized for /py?command=print(%27Hello%20World%27)%0A with code 200
+[07/06/2023 12:52:24]: 0:0:0:0:0:0:0:1 got Authorized for  with code 200
+[07/06/2023 12:52:24]: 0:0:0:0:0:0:0:1 got Authorized for /favicon.ico with code 404
+[07/06/2023 12:52:25]: 0:0:0:0:0:0:0:1 got Authorized for /images with code 200
+[07/06/2023 12:53:32]: 0:0:0:0:0:0:0:1 got Authorized for /images/n2.jpg with code 404
+[07/06/2023 12:53:38]: 0:0:0:0:0:0:0:1 got Authorized for /images/n2.jpg with code 404
+[07/06/2023 12:53:51]: 0:0:0:0:0:0:0:1 got Authorized for /images/n2.jpg with code 404
+[07/06/2023 12:54:34]: 0:0:0:0:0:0:0:1 got Authorized for /images/n2.jpg with code 404
+[07/06/2023 12:55:17]: 0:0:0:0:0:0:0:1 got Authorized for /miniWeb.html with code 404
+[07/06/2023 12:55:17]: 0:0:0:0:0:0:0:1 got Authorized for /images/n2.jpg with code 404
+[07/06/2023 12:55:21]: 0:0:0:0:0:0:0:1 got Authorized for /images with code 200
+[07/06/2023 12:55:22]: 0:0:0:0:0:0:0:1 got Authorized for /images/l1.gif with code 404
+[07/06/2023 12:55:46]: 0:0:0:0:0:0:0:1 got Authorized for /images/l1.gif with code 404
+[07/06/2023 12:55:47]: 0:0:0:0:0:0:0:1 got Authorized for /favicon.ico with code 404
+[07/06/2023 12:56:57]: 0:0:0:0:0:0:0:1 got Authorized for /images/l1.gif with code 404
