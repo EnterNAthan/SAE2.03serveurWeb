@@ -24,7 +24,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Document config = loadConfigFile("~/etc/myweb/myweb.conf"); //config.xml de base
+        Document config = loadConfigFile("project/config.xml"); // ~/etc/myweb/myweb.conf pour le .deb
         int port;
         String root = "www";
         if (args.length != 0) {

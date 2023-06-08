@@ -1,6 +1,7 @@
 <webconf>
     <port>3333</port>
     <root>www</root>
+    <!--Nous avons utilisé des ip -->
     <accept>172.20.10.5</accept>
     <reject>172.20.10.3</reject>
     <accesslog>log/access.log</accesslog>
