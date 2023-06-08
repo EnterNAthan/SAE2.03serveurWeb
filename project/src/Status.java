@@ -1,8 +1,12 @@
 public class Status {
     public static String buildStatusPage() {
+
+        //recuperer la memoire libre
         String freeMemory = Utils.getFreeMemory();
-        System.out.println(freeMemory);
+        //System.out.println(freeMemory);
+        //recuperer le disque libre
         String freeDisk = Utils.getFreeDisk();
+        //recuperer le nombre de processus
         String processCount = Utils.getProcessCount().replace(" ", "&nbsp;");
 
 

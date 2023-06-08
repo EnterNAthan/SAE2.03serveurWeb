@@ -1,5 +1,7 @@
 import java.util.List;
 
+
+// cette classe permet de gérer les différents types de contenu
 public enum ContentType {
     IMAGE(
             "image",
@@ -26,6 +28,7 @@ public enum ContentType {
         return "Content-Type: " + type + "/" + extension + "\r\n";
     }
 
+    //permet de retourner le type de contenu en parcourant les extensions
     public static ContentType of(String extension) {
         for (ContentType contentType : ContentType.values()) {
             for (String ext : contentType.extensions) {

@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 public class Main {
@@ -25,7 +24,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Document config = loadConfigFile("project/config.xml");
+        Document config = loadConfigFile("~/etc/myweb/myweb.conf"); //config.xml de base
         int port;
         String root = "www";
         if (args.length != 0) {
@@ -253,6 +252,8 @@ public class Main {
     }
 
 
+
+    /*nous avons decider de faire avec des ip local car ce n'etais pas indiquer explicitement dans le sujet */
     public static boolean isIpAddressAllowed(String ipAddress) {
         for (String accepted : acceptedAddresses) {
             if (ipAddress.equals(accepted)) {

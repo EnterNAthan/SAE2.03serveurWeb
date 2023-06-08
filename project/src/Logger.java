@@ -10,7 +10,6 @@ public class Logger {
     private static File logAccessFile, logErrorFile;
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
     public static void init(Element webconf) {
-        // création des fichier des log s'il sotn pas crée
         String logAccesPath = webconf.getElementsByTagName("accesslog").item(0).getTextContent();
         String logErrorPath = webconf.getElementsByTagName("errorlog").item(0).getTextContent();
         logAccessFile = new File(logAccesPath);
@@ -33,6 +32,7 @@ public class Logger {
         }
     }
 
+    //permet de log les acces et si ils sont autorisés ou non
     public static void logAccess(String ip, boolean authorized, String requestPath, int status) {
         try {
             FileWriter fw = new FileWriter(logAccessFile, true);
@@ -43,6 +43,7 @@ public class Logger {
         }
     }
 
+    //permet de log les erreurs
     public static void logError(String message) {
         try {
             FileWriter fw = new FileWriter(logErrorFile, true);

@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 public class Interpreter {
+    //permet d'interpreter le code python
     public static String interpretPython(String code) {
         try {
             return Utils.execCommand("python3 -c \"" + code + "\"");
@@ -13,6 +14,7 @@ public class Interpreter {
         return "Error while interpreting python code";
     }
 
+    //permet d'interpreter le code bash
     public static String formatHTMLPage(File file) throws IOException, InterruptedException {
         String html = new String(Files.readAllBytes(file.toPath()));
         while (html.contains("<code interpreteur=\"")) {
